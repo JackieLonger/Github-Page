@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互動實驗室 | JS 井字遊戲</title>
+    <style>
+        :root {
+            --primary-color: #22314E;
+            --accent-color: #F3732A;
+            --bg-color: #f0f2f5;
+        }
+        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; margin: 0; background-color: var(--bg-color); color: #333; }
+        header { background: linear-gradient(135deg, var(--primary-color) 0%, #304770 100%); color: white; text-align: center; padding: 50px 20px; }
+        header h1 { margin: 0 0 10px 0; }
+        .nav-link { color: #A0B2C6; text-decoration: none; font-size: 1.1rem; display: inline-flex; align-items: center; transition: color 0.3s; }
+        .nav-link:hover { color: white; }
+        
+        .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+        .game-card { background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); text-align: center; }
+        
+        .status { font-size: 1.5rem; margin-bottom: 25px; font-weight: bold; color: var(--primary-color); }
+        .board { display: grid; grid-template-columns: repeat(3, 100px); grid-template-rows: repeat(3, 100px); gap: 10px; justify-content: center; margin-bottom: 30px; }
+        .cell { width: 100px; height: 100px; background-color: #eee; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 3rem; font-weight: bold; cursor: pointer; transition: background-color 0.2s; }
+        .cell:hover { background-color: #e0e0e0; }
+        .cell.x { color: #e74c3c; }
+        .cell.o { color: #3498db; }
+        
+        .btn-reset { background-color: var(--accent-color); color: white; border: none; padding: 12px 30px; font-size: 1.1rem; border-radius: 5px; cursor: pointer; transition: opacity 0.3s; font-weight: bold; }
+        .btn-reset:hover { opacity: 0.8; }
+        footer { text-align: center; padding: 20px; color: #777; margin-top: 40px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="nav-link">← 返回首頁 (ROS 2 介紹)</a>
+        <h1 style="margin-top: 15px;">互動實驗室：井字遊戲</h1>
+    </header>
+
+    <div class="container">
+        <div class="game-card">
+            <div id="status" class="status">載入中...</div>
+            <div id="board" class="board"></div>
+            <button class="btn-reset" onclick="resetGame()">重置遊戲</button>
+        </div>
+    </div>
+
+    <footer>&copy; 2026 Web Interactive Lab</footer>
+
+    <script>
+        // 依照截圖狀態初始化
+        let board = [
+            ['', '', 'X'],
+            ['', 'X', 'O'],
+            ['X', 'O', '']
+        ];
+        let currentPlayer = 'X';
+        let gameActive = true;
+
+        const boardElement = document.getElementById('board');
+        const statusElement = document.getElementById('status');
+
+        function createBoard() {
+            boardElement.innerHTML = '';
+            for (let r = 0; r < 3; r++) {
+                for (let c = 0; c < 3; c++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    if (board[r][c] !== '') {
+                        cell.classList.add(board[r][c].toLowerCase());
+                        cell.innerText = board[r][c];
+                    }
+                    cell.addEventListener('click', () => handleCellClick(r, c));
+                    boardElement.appendChild(cell);
+                }
+            }
+            checkResult();
+        }
+
+        function handleCellClick(r, c) {
+            if (board[r][c] !== '' || !gameActive) return;
+            board[r][c] = currentPlayer;
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            createBoard();
+        }
+
+        function checkResult() {
+            let roundWon = false;
+            const winConditions = [
+                [[0,0], [0,1], [0,2]], [[1,0], [1,1], [1,2]], [[2,0], [2,1], [2,2]], // 橫排
+                [[0,0], [1,0], [2,0]], [[0,1], [1,1], [2,1]], [[0,2], [1,2], [2,2]], // 直排
+                [[0,0], [1,1], [2,2]], [[0,2], [1,1], [2,0]] // 對角線
+            ];
+
+            for (let condition of winConditions) {
+                const [a, b, c] = condition;
+                const valA = board[a[0]][a[1]];
+                const valB = board[b[0]][b[1]];
+                const valC = board[c[0]][c[1]];
+
+                if (valA !== '' && valA === valB && valA === valC) {
+                    roundWon = true;
+                    break;
+                }
+            }
+
+            if (roundWon) {
+                const winner = currentPlayer === 'X' ? 'O' : 'X';
+                statusElement.innerText = `恭喜！玩家 ${winner} 獲勝！`;
+                gameActive = false;
+                return;
+            }
+
+            let roundDraw = !board.flat().includes('');
+            if (roundDraw) {
+                statusElement.innerText = "平局！";
+                gameActive = false;
+                return;
+            }
+
+            statusElement.innerText = `輪到玩家 ${currentPlayer} 的回合`;
+        }
+
+        function resetGame() {
+            board = [['', '', ''], ['', '', ''], ['', '', '']];
+            currentPlayer = 'X';
+            gameActive = true;
+            createBoard();
+        }
+
+        createBoard();
+    </script>
+</body>
+</html>

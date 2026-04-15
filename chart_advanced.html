@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>進階實驗室：Chart.js 混合圖表與參數</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #22314E;
+            --accent-color: #F3732A;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1a253b 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .nav-link {
+            color: #A0B2C6;
+            text-decoration: none;
+            font-size: 1.1rem;
+            display: inline-flex;
+            align-items: center;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover { color: white; }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto 40px;
+            padding: 0 20px;
+        }
+
+        .section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            border-left: 5px solid var(--accent-color);
+            padding-left: 15px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        h3 { color: #555; margin-top: 25px; margin-bottom: 10px; }
+        p { margin-top: 0; margin-bottom: 15px; }
+        code { background: #e9ecef; padding: 3px 7px; border-radius: 5px; color: #d63384; font-family: monospace; font-size: 0.9em; }
+
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 400px;
+            width: 100%;
+            max-width: 700px;
+            margin-bottom: 30px;
+        }
+
+        .options-list {
+            background-color: #f8f9fa;
+            padding: 15px 30px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        footer { text-align: center; padding: 20px; color: #777; font-size: 0.9rem; margin-top: 40px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="nav-link">← 返回首頁 (ROS 2 介紹)</a>
+        <h1 style="margin-top: 15px;">Chart.js 進階實驗室</h1>
+        <p>折線圖、多重資料集（混合圖表）與 Options 參數設定</p>
+    </header>
+
+    <div class="container">
+        
+        <div class="section">
+            <h2>1. 折線圖與平滑參數 (Options)</h2>
+            <p>折線圖 (Line Chart) 適合展示數據隨時間的變化。在此範例中，我們模擬了無人機在 ROS 2 Offboard 控制下的飛行高度變化。</p>
+            <div class="options-list">
+                <strong>關鍵 Options 參數解說：</strong>
+                <ul>
+                    <li><code>tension: 0.4</code> - 讓折線變成平滑的貝茲曲線 (0 為直線)。</li>
+                    <li><code>fill: true</code> - 在折線下方填滿背景色，形成面積圖的效果。</li>
+                    <li><code>pointRadius: 5</code> - 設定資料點的圓圈大小。</li>
+                </ul>
+            </div>
+            <div class="chart-container" style="margin-top: 20px;">
+                <canvas id="lineChart"></canvas>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>2. 混合圖表與雙 Y 軸設定</h2>
+            <p>混合圖表 (Mixed Chart) 允許你在同一個畫布上同時繪製長條圖與折線圖。我們模擬 Jetson Orin NX 在執行 AI 影像辨識時的「CPU 負載 (%)」與「核心溫度 (°C)」。</p>
+            <p>因為負載與溫度的數值範圍不同，我們透過 <code>options.scales</code> 設定了<strong>左右兩個獨立的 Y 軸</strong>。</p>
+            <div class="chart-container">
+                <canvas id="mixedChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        &copy; 2026 ROS 2 Project | GitHub Pages Deployment Test
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // --- 1. 折線圖 (Line Chart) ---
+        const ctxLine = document.getElementById('lineChart').getContext('2d');
+        const myLineChart = new Chart(ctxLine, {
+            type: 'line',
+            data: {
+                labels: ['0s', '5s', '10s', '15s', '20s', '25s', '30s'], // 時間軸
+                datasets: [{
+                    label: 'UAV 飛行高度 (公尺)',
+                    data: [0, 2.5, 5.0, 4.8, 5.2, 5.0, 0], // 高度數據
+                    borderColor: '#F3732A', // 橘色線條
+                    backgroundColor: 'rgba(243, 115, 42, 0.2)', // 半透明橘色填滿
+                    borderWidth: 3,
+                    tension: 0.4, // 平滑曲線參數
+                    fill: true,   // 啟用下方填滿
+                    pointBackgroundColor: '#22314E', // 點的顏色
+                    pointRadius: 5, // 點的大小
+                    pointHoverRadius: 8 // 滑鼠移過去時點的大小
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'PX4 Offboard 起飛與降落高度紀錄',
+                        font: { size: 16 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        suggestedMax: 8, // 建議 Y 軸最大值
+                        title: { display: true, text: '高度 (m)' }
+                    },
+                    x: {
+                        title: { display: true, text: '任務時間' }
+                    }
+                }
+            }
+        });
+
+        // --- 2. 混合圖表 (Mixed Chart) ---
+        const ctxMixed = document.getElementById('mixedChart').getContext('2d');
+        const myMixedChart = new Chart(ctxMixed, {
+            type: 'bar', // 基底圖表類型設定為 bar
+            data: {
+                labels: ['13:00', '13:05', '13:10', '13:15', '13:20', '13:25'],
+                datasets: [
+                    // 資料集 1：折線圖 (溫度)
+                    {
+                        type: 'line', // 強制此資料集為折線圖
+                        label: '核心溫度 (°C)',
+                        data: [45, 52, 68, 75, 78, 65],
+                        borderColor: '#e74c3c', // 紅色
+                        backgroundColor: '#e74c3c',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        yAxisID: 'y-temperature' // 指定對應右邊的 Y 軸
+                    },
+                    // 資料集 2：長條圖 (CPU 負載)
+                    {
+                        type: 'bar', // 長條圖
+                        label: 'CPU 負載 (%)',
+                        data: [15, 30, 85, 95, 100, 40],
+                        backgroundColor: 'rgba(52, 152, 219, 0.6)', // 藍色
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        borderWidth: 1,
+                        yAxisID: 'y-load' // 指定對應左邊的 Y 軸
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index', // 滑鼠移上去時，同時顯示該 X 軸上所有資料集的提示框
+                    intersect: false,
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Jetson Orin NX 系統資源監控',
+                        font: { size: 16 }
+                    }
+                },
+                scales: {
+                    // 左側 Y 軸設定 (負載)
+                    'y-load': {
+                        type: 'linear',
+                        position: 'left',
+                        beginAtZero: true,
+                        max: 100,
+                        title: { display: true, text: '負載 (%)', color: '#3498db' },
+                        grid: { drawOnChartArea: false } // 不畫格線，避免畫面太亂
+                    },
+                    // 右側 Y 軸設定 (溫度)
+                    'y-temperature': {
+                        type: 'linear',
+                        position: 'right',
+                        beginAtZero: false,
+                        min: 30,
+                        max: 90,
+                        title: { display: true, text: '溫度 (°C)', color: '#e74c3c' }
+                    }
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

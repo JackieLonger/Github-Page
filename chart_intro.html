@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>入門實驗室：Chart.js 基礎圖表</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #22314E; /* 深邃藍 */
+            --accent-color: #F3732A;  /* ROS 2 標誌橘 */
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        /* 導覽列風格 */
+        header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1a253b 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .nav-link {
+            color: #A0B2C6;
+            text-decoration: none;
+            font-size: 1.1rem;
+            display: inline-flex;
+            align-items: center;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: white;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto 40px;
+            padding: 0 20px;
+        }
+
+        .section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            border-left: 5px solid var(--accent-color);
+            padding-left: 15px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            color: #555;
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        code {
+            background: #e9ecef;
+            padding: 3px 7px;
+            border-radius: 5px;
+            color: #d63384;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        /* 圖表 Canvas 容器設定 */
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 400px; /* 固定高度，讓圖表不會無限伸展 */
+            width: 100%;
+            max-width: 600px; /* 最大寬度 */
+            margin-bottom: 30px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #777;
+            font-size: 0.9rem;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="nav-link">← 返回首頁 (ROS 2 介紹)</a>
+        <h1 style="margin-top: 15px;">Chart.js 入門實驗室</h1>
+        <p>學習如何在網頁中引入並繪製基礎圖表</p>
+    </header>
+
+    <div class="container">
+        
+        <div class="section">
+            <h2>Chart.js 入門：CDN 與 Canvas</h2>
+            <p>要開始使用 Chart.js，最快的方法是透過 CDN (Content Delivery Network) 引入函式庫。在 HTML 檔案的 <code>&lt;head&gt;</code> 標籤中加入以下代碼即可：</p>
+            <p><code>&lt;script src="https://cdn.jsdelivr.net/npm/chart.js"&gt;&lt;/script&gt;</code></p>
+            <p>接著，在你想展示圖表的位置加入 <code>&lt;canvas&gt;</code> 標籤，並給它一個唯一的 <code>id</code>。我們通常會將 Canvas 放在一個容器中，以便控制其大小與響應式行為。</p>
+            <p><code>&lt;div class="chart-container"&gt;&lt;canvas id="myChart"&gt;&lt;/canvas&gt;&lt;/div&gt;</code></p>
+        </div>
+
+        <div class="section">
+            <h2>實作範例</h2>
+            
+            <h3>範例 1：2023 年度機器人出貨量 (長條圖)</h3>
+            <p>長條圖適合用於比較不同類別之間的數值大小。我們使用 plausbile 的教育性數據來展示。</p>
+            <div class="chart-container">
+                <canvas id="barChart"></canvas>
+            </div>
+
+            <hr style="border: 1px solid #eee; margin: 30px 0;">
+
+            <h3>範例 2：ROS 2 專案開發時間分配 (圓餅圖)</h3>
+            <p>圓餅圖則非常適合展示一個整體中各部分的佔比。此數據僅供範例使用，並不代表實際開發狀況。</p>
+            <div class="chart-container">
+                <canvas id="pieChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        &copy; 2026 ROS 2 Project | GitHub Pages Deployment Test
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // 步驟 3：編寫 JavaScript 程式碼來繪製圖表
+
+        // --- 長條圖 (Bar Chart) ---
+        // 獲取 Canvas 標籤的 Context
+        const ctxBar = document.getElementById('barChart').getContext('2d');
+        const myBarChart = new Chart(ctxBar, {
+            type: 'bar', // 指定圖表類型為長條圖
+            data: {
+                labels: ['工業型', '服務型', '協作型', '移動型', '其他'], // X 軸標籤 (類別)
+                datasets: [{
+                    label: '2023 年度出貨量 (台)', // 數據集名稱
+                    data: [250, 480, 150, 320, 100], // 實際數據
+                    backgroundColor: [ // 長條圖顏色 (不指定名稱，使用通用色調)
+                        'rgba(52, 152, 219, 0.7)', // 藍色
+                        'rgba(243, 115, 42, 0.7)',  // 橘色 (類 ROS 2 橘)
+                        'rgba(46, 204, 113, 0.7)', // 綠色
+                        'rgba(155, 89, 182, 0.7)', // 紫色
+                        'rgba(149, 165, 166, 0.7)'  // 灰色
+                    ],
+                    borderColor: [ // 長條圖邊框顏色
+                        'rgba(52, 152, 219, 1)',
+                        'rgba(243, 115, 42, 1)',
+                        'rgba(46, 204, 113, 1)',
+                        'rgba(155, 89, 182, 1)',
+                        'rgba(149, 165, 166, 1)'
+                    ],
+                    borderWidth: 1 // 邊框寬度
+                }]
+            },
+            options: {
+                responsive: true, // 響應式
+                maintainAspectRatio: false, // 不保持固定比例，使用 CSS 控制
+                scales: {
+                    y: {
+                        beginAtZero: true // Y 軸從零開始
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true // 顯示圖例
+                    }
+                }
+            }
+        });
+
+        // --- 圓餅圖 (Pie Chart) ---
+        const ctxPie = document.getElementById('pieChart').getContext('2d');
+        const myPieChart = new Chart(ctxPie, {
+            type: 'pie', // 指定圖表類型為圓餅圖
+            data: {
+                labels: ['系統架構', '通訊設定 (DDS)', '演算法設計', '硬體整合', '測試與部署'], // 圓餅圖各部分標籤
+                datasets: [{
+                    label: '專案開發時間分配 (%)',
+                    data: [20, 15, 30, 25, 10], // 百分比數據
+                    backgroundColor: [ // 各部分顏色
+                        '#3498db', '#e67e22', '#2ecc71', '#9b59b6', '#34495e'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right', // 圖例位置
+                        labels: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

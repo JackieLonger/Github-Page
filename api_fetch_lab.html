@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 實驗室：Fetch 基礎與 AI 災防分析</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #22314E;
+            --accent-color: #F3732A;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+        }
+
+        body { font-family: 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-color); line-height: 1.6; }
+        header { background: linear-gradient(135deg, var(--primary-color) 0%, #1a253b 100%); color: white; text-align: center; padding: 40px 20px; }
+        .nav-link { color: #A0B2C6; text-decoration: none; font-size: 1.1rem; display: inline-flex; align-items: center; transition: color 0.3s; }
+        .nav-link:hover { color: white; }
+        
+        .container { max-width: 900px; margin: 20px auto 40px; padding: 0 20px; }
+        .section { background: var(--card-bg); border-radius: 12px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 30px; }
+        h2 { color: var(--primary-color); border-left: 5px solid var(--accent-color); padding-left: 15px; margin-top: 0; }
+        h3 { color: #555; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        
+        code { background: #e9ecef; padding: 3px 7px; border-radius: 5px; color: #d63384; font-family: monospace; font-size: 0.9em; }
+        pre { background: #2d2d2d; color: #ccc; padding: 15px; border-radius: 8px; overflow-x: auto; font-family: monospace; }
+        
+        /* 實驗室表單與按鈕樣式 */
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 5px; font-weight: bold; color: var(--primary-color); }
+        .input-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-family: monospace; }
+        
+        .btn { background-color: var(--accent-color); color: white; border: none; padding: 10px 20px; font-size: 1rem; border-radius: 5px; cursor: pointer; transition: opacity 0.3s; font-weight: bold; margin-right: 10px; margin-bottom: 10px; }
+        .btn:hover { opacity: 0.8; }
+        .btn:disabled { background-color: #ccc; cursor: not-allowed; }
+        .btn-ai { background-color: #8e44ad; } /* AI 專屬顏色 */
+        
+        .result-box { border: 2px dashed #bdc3c7; border-radius: 8px; padding: 15px; min-height: 100px; background-color: #fafafa; margin-top: 15px; white-space: pre-wrap; word-wrap: break-word;}
+        .loading { color: var(--accent-color); font-weight: bold; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+        footer { text-align: center; padding: 20px; color: #777; font-size: 0.9rem; margin-top: 40px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="nav-link">← 返回首頁 (ROS 2 介紹)</a>
+        <h1 style="margin-top: 15px;">API 實驗室：Fetch 基礎與 AI 分析</h1>
+        <p>學習 API 概念、HTTP GET/POST 請求與 JSON 解析</p>
+    </header>
+
+    <div class="container">
+        
+        <div class="section">
+            <h2>課程筆記：API 與 Fetch 基礎</h2>
+            <p><strong>1. 什麼是 API？</strong><br>
+            API (Application Programming Interface) 就像是餐廳的服務生，你（前端）把點單交給服務生（API），服務生去廚房（資料庫）拿菜，再把菜（資料）端回給你。</p>
+            
+            <p><strong>2. HTTP Request (GET) 與 Fetch</strong><br>
+            在 JavaScript 中，我們使用 <code>fetch()</code> 函數來向 API 請求資料。最常見的方法是 <code>GET</code>（拿取資料）。</p>
+            
+            <p><strong>3. JSON 格式</strong><br>
+            JavaScript Object Notation (JSON) 是一種輕量級的資料交換格式。它看起來像 JS 的物件，是目前 Web API 傳遞資料的絕對主流。</p>
+        </div>
+
+        <div class="section">
+            <h2>實作 1：抓取台灣最新地震報告 (GET)</h2>
+            <p>我們將使用 <b>Fetch API</b> 向中央氣象署的開放資料平台發送 <code>GET</code> 請求，獲取最新的一筆「顯著有感地震報告」，並解析其 <code>JSON</code> 內容。</p>
+            
+            <div class="input-group">
+                <label for="cwaKey">中央氣象署授權碼 (CWA API Key) <a href="https://opendata.cwa.gov.tw/user/Login" target="_blank" style="font-size: 0.8em; font-weight: normal;">[免費申請]</a></label>
+                <input type="password" id="cwaKey" placeholder="請輸入 CWA- 開頭的授權碼 (例如: CWA-12345678-ABCD...)">
+            </div>
+            
+            <button class="btn" id="btnFetchEarthquake">抓取最新地震資料 (GET)</button>
+            
+            <h3>原始 JSON 資料 (僅擷取重要資訊)</h3>
+            <div id="earthquakeResult" class="result-box">等待發送請求...</div>
+        </div>
+
+        <div class="section">
+            <h2>實作 2：Gemini AI 災情分析 (POST)</h2>
+            <p>抓到地震資料後，我們使用 <code>POST</code> 方法，將剛剛的 JSON 資料與我們的 Prompt（提示詞）包裝起來，發送給 Google AI Studio，請 AI 給出專業的安全建議。</p>
+
+            <div class="input-group">
+                <label for="geminiKey">Google AI Studio API Key <a href="https://aistudio.google.com/app/apikey" target="_blank" style="font-size: 0.8em; font-weight: normal;">[免費申請]</a></label>
+                <input type="password" id="geminiKey" placeholder="請輸入 AIZA 開頭的 API Key">
+            </div>
+
+            <button class="btn btn-ai" id="btnAnalyzeAI" disabled>✨ 請 Gemini 分析地震並提供建議 (POST)</button>
+            
+            <h3>AI 分析與防護建議</h3>
+            <div id="aiResult" class="result-box">請先完成實作 1 抓取地震資料...</div>
+        </div>
+
+    </div>
+
+    <footer>
+        &copy; 2026 ROS 2 Project | Web & AI Integration Lab
+    </footer>
+
+    <script>
+        // 全域變數儲存地震資料，供 AI 分析使用
+        let currentEarthquakeData = null;
+
+        // UI 元素
+        const btnFetch = document.getElementById('btnFetchEarthquake');
+        const btnAI = document.getElementById('btnAnalyzeAI');
+        const eqResultDiv = document.getElementById('earthquakeResult');
+        const aiResultDiv = document.getElementById('aiResult');
+
+        // --- 實作 1：抓取氣象署地震資料 (GET) ---
+        btnFetch.addEventListener('click', async () => {
+            const apiKey = document.getElementById('cwaKey').value.trim();
+            if (!apiKey) {
+                alert("請先輸入氣象署的 API 授權碼！");
+                return;
+            }
+
+            eqResultDiv.innerHTML = '<span class="loading">正在向氣象署發送 GET 請求中...</span>';
+            btnAI.disabled = true; // 暫時停用 AI 按鈕
+
+            // 氣象署「顯著有感地震報告」API URL (limit=1 代表只要最新的一筆)
+            const url = `https://opendata.cwa.gov.tw/api/v1/rest/datastore/E-A0145-001?Authorization=${apiKey}&limit=1&format=JSON`;
+
+            try {
+                // 1. 發送 GET 請求
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP 錯誤狀態碼: ${response.status} (可能是 API Key 錯誤)`);
+                }
+
+                // 2. 解析 JSON 格式
+                const data = await response.json();
+                
+                // 3. 擷取需要的資料
+                const earthquake = data.records.Earthquake[0];
+                const info = earthquake.EarthquakeInfo;
+                
+                currentEarthquakeData = {
+                    "發生時間": info.OriginTime,
+                    "震央位置": info.Epicenter.Location,
+                    "芮氏規模": info.EarthquakeMagnitude.MagnitudeValue,
+                    "地震深度": info.FocalDepth + " 公里",
+                    "最大震度": earthquake.Intensity.EarthquakeMacroseismicIntensity.MaximumMacroseismicIntensity
+                };
+
+                // 將整理好的資料轉回 JSON 字串顯示在畫面上，加上縮排 (2格) 方便閱讀
+                eqResultDiv.innerHTML = `<pre>${JSON.stringify(currentEarthquakeData, null, 2)}</pre>`;
+                
+                // 啟用 AI 分析按鈕
+                btnAI.disabled = false;
+                aiResultDiv.innerText = "地震資料準備就緒，可以呼叫 AI 進行分析了！";
+
+            } catch (error) {
+                console.error("抓取失敗:", error);
+                eqResultDiv.innerHTML = `<span style="color:red;">發生錯誤：<br>${error.message}</span>`;
+            }
+        });
+
+        // --- 實作 2：串接 Gemini API 進行分析 (POST) ---
+        btnAI.addEventListener('click', async () => {
+            const apiKey = document.getElementById('geminiKey').value.trim();
+            if (!apiKey) {
+                alert("請先輸入 Google AI Studio 的 API Key！");
+                return;
+            }
+
+            aiResultDiv.innerHTML = '<span class="loading">正在向 Gemini 發送 POST 請求與 JSON 資料...</span>';
+
+            // Gemini API v1beta (使用 gemini-1.5-flash 模型)
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+            // 準備 POST 要傳送的 Body (JSON 格式)
+            const requestBody = {
+                contents: [{
+                    parts: [{
+                        text: `這是一份台灣最新地震的 JSON 資料：${JSON.stringify(currentEarthquakeData)}。請你擔任防災專家，1. 用一句話摘要這起地震的規模與地點。2. 根據這個規模，條列式給出3點民眾目前的防護或檢查建議。用繁體中文回答。`
+                    }]
+                }]
+            };
+
+            try {
+                // 發送 POST 請求，必須設定 headers 和 body
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody) // 將 JS 物件轉為 JSON 字串傳輸
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP 錯誤: ${response.status} (請確認 API Key 是否正確)`);
+                }
+
+                const data = await response.json();
+                
+                // 解析 Gemini 的回傳格式
+                const aiText = data.candidates[0].content.parts[0].text;
+                aiResultDiv.innerText = aiText;
+
+            } catch (error) {
+                console.error("AI 呼叫失敗:", error);
+                aiResultDiv.innerHTML = `<span style="color:red;">AI 分析發生錯誤：<br>${error.message}</span>`;
+            }
+        });
+    </script>
+</body>
+</html>

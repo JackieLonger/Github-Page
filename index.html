@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深入淺出 ROS 2 | 次世代機器人開發框架</title>
+    <style>
+        :root {
+            --primary-color: #22314E;
+            --accent-color: #F3732A;
+            --bg-color: #F8F9FA;
+            --text-color: #333333;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-color); line-height: 1.6; }
+        header { background: linear-gradient(135deg, var(--primary-color) 0%, #1a253b 100%); color: white; text-align: center; padding: 60px 20px 80px; }
+        header h1 { font-size: 3rem; margin: 0 0 15px 0; }
+        header p { font-size: 1.2rem; color: #A0B2C6; max-width: 600px; margin: 0 auto 25px; }
+        
+        .btn-container { display: flex; justify-content: center; flex-wrap: wrap; gap: 15px; margin-top: 20px; max-width: 900px; margin-left: auto; margin-right: auto; }
+        
+        .nav-btn { display: inline-block; background-color: var(--accent-color); color: white; text-decoration: none; padding: 12px 25px; border-radius: 30px; font-weight: bold; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 15px rgba(243, 115, 42, 0.4); }
+        .nav-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(243, 115, 42, 0.6); }
+        .nav-btn.secondary { background-color: #3498db; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4); }
+        .nav-btn.secondary:hover { box-shadow: 0 6px 20px rgba(52, 152, 219, 0.6); }
+        .nav-btn.tertiary { background-color: #f1c40f; color: #22314E; box-shadow: 0 4px 15px rgba(241, 196, 15, 0.4); }
+        .nav-btn.tertiary:hover { box-shadow: 0 6px 20px rgba(241, 196, 15, 0.6); }
+
+        .container { max-width: 1000px; margin: -30px auto 40px; padding: 0 20px; position: relative; }
+        .card { background: white; border-radius: 12px; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-bottom: 30px; }
+        h2 { color: var(--primary-color); border-bottom: 3px solid var(--accent-color); padding-bottom: 10px; display: inline-block; margin-top: 0; }
+        .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-top: 20px; }
+        .feature-box { background: #ffffff; border: 1px solid #eaeaea; border-radius: 10px; padding: 25px; border-top: 5px solid var(--accent-color); }
+        .feature-box h3 { color: var(--primary-color); margin-top: 0; }
+        code { background: #e9ecef; padding: 3px 7px; border-radius: 5px; color: #d63384; font-family: monospace; }
+        footer { text-align: center; padding: 25px; background: var(--primary-color); color: white; margin-top: 60px; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>認識 ROS 2 架構</h1>
+        <p>為分散式系統、無人機群與邊緣運算打造的工業級機器人作業系統</p>
+        
+        <div class="btn-container">
+            <a href="game.html" class="nav-btn">🎮 井字遊戲</a>
+            <a href="chart_intro.html" class="nav-btn secondary">📊 Chart.js 基礎</a>
+            <a href="chart_advanced.html" class="nav-btn secondary">📈 Chart.js 進階</a>
+            <a href="api_fetch_lab.html" class="nav-btn tertiary">🌐 API 與 AI 災防分析</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>什麼是 ROS 2？</h2>
+            <p>ROS 2（Robot Operating System 2）是一個開源的機器人軟體開發框架。相較於第一代，ROS 2 引入了更嚴謹的即時性（Real-time）支援，並徹底改變了底層通訊架構。目前我們主要使用 <code>ROS 2 Humble</code> 版本來確保系統的長期穩定性。</p>
+        </div>
+
+        <div class="card">
+            <h2>核心優勢與實務應用</h2>
+            <div class="features">
+                <div class="feature-box">
+                    <h3>🌐 DDS 分散式通訊</h3>
+                    <p>捨棄了舊版的中心化架構，改採 Data Distribution Service (DDS)。系統中的每個節點都能點對點溝通，大幅提升多機協作時的網路穩定性。</p>
+                </div>
+                <div class="feature-box">
+                    <h3>🚁 飛控與微控制器整合</h3>
+                    <p>透過 <code>uXRCE-DDS</code> 協定，能夠完美橋接資源受限的硬體設備，將 ROS 2 節點與 PX4 Autopilot 進行深度通訊，實現離線自主控制。</p>
+                </div>
+                <div class="feature-box">
+                    <h3>⚡ 邊緣運算效能</h3>
+                    <p>無縫運行在如 NVIDIA Jetson Orin NX 高效能載板上，處理高頻寬影像串流並即時下達決策指令。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 ROS 2 學習筆記 | Hosted on GitHub Pages</p>
+    </footer>
+
+</body>
+</html>
